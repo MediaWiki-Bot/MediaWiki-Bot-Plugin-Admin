@@ -34,26 +34,16 @@ The Perlwikipedia team
 
 =head1 METHODS
 
-=over 4
-
-=item import()
+=head2 import()
 
 Calling import from any module will, quite simply, transfer these subroutines into that module's namespace. This is possible from any module which is compatible with MediaWiki::Bot. Typically, you will C<use MediaWiki::Bot> and nothing else. Just use the methods, MediaWiki::Bot automatically imports plugins if found.
 
 =cut
 
-# Use Exporter instead?
-#sub import {
-#    no strict 'refs';
-#    my @methods = qw(rollback delete undelete delete_old_image block unblock protect unprotect);
-#    foreach my $method (@methods) {
-#        *{caller() . "::$method"} = \&{$method};
-#    }
-#}
 use Exporter qw(import);
 our @EXPORT = qw(rollback delete undelete delete_old_image block unblock protect unprotect);
 
-=item rollback($pagename, $username[,$summary[,$markbot]])
+=head2 rollback($pagename, $username[,$summary[,$markbot]])
 
 Uses rollback to revert to the last revision of $pagename not edited by the latest editor of that page. If $username is not the last editor of $pagename, you will get an error; that's why it is a I<very good idea> to set this. If you do not, the latest edit(s) will be rolled back, and you could end up rolling back something you didn't intend to. Therefore, $username should be considered B<required>. The remaining parameters are optional: $summary (to set a custom rollback edit summary), and $markbot (which marks both the rollback and the edits that were rolled back as bot edits).
 
@@ -86,7 +76,7 @@ sub rollback {
     }
 }
 
-=item delete($page[,$summary])
+=head2 delete($page[,$summary])
 
 Deletes the page with the specified summary. If you omit $summary, a generic one will be used.
 
@@ -126,7 +116,7 @@ sub delete {
     return $res;
 }
 
-=item undelete($page[,$summary])
+=head2 undelete($page[,$summary])
 
 Undeletes $page with $summary. If you omit $summary, a generic one will be used.
 
@@ -165,7 +155,7 @@ sub undelete {
     }
 }
 
-=item delete_old_image($page, $revision[,$summary])
+=head2 delete_old_image($page, $revision[,$summary])
 
 Deletes the specified revision of the image with the specified summary. A generic summary will be used if you omit $summary.
 
@@ -203,7 +193,7 @@ sub delete_old_image { # Needs to use the API
     return $res;
 }
 
-=item block($user, $length,[$summary[,$anononly[,$autoblock[,$blockaccountcreation,[$blockemail,[$blocktalk]]]]]])
+=head2 block($user, $length,[$summary[,$anononly[,$autoblock[,$blockaccountcreation,[$blockemail,[$blocktalk]]]]]])
 
 Blocks the user with the specified options. All options optional except $user and $length. Last four are true/false. Defaults to a generic summary, with all options disabled.
 
@@ -262,7 +252,7 @@ sub block {
     return $res;
 }
 
-=item unblock($user[,$summary])
+=head2 unblock($user[,$summary])
 
 Unblocks the user with the specified summary.
 
@@ -307,7 +297,7 @@ sub unblock {
     return $res;
 }
 
-=item unprotect($page, $reason)
+=head2 unprotect($page, $reason)
 
 Unprotects a page. You can also set parameters for protect() such that the page is unprotected.
 
@@ -326,7 +316,7 @@ sub unprotect { # A convenience function
     return $self->protect($page, $reason, '', '');
 }
 
-=item protect($page, $reason, $editlvl, $movelvl, $time, $cascade)
+=head2 protect($page, $reason, $editlvl, $movelvl, $time, $cascade)
 
 Protects (or unprotects) the page. $editlvl and $movelvl may be '', 'autoconfirmed', or 'sysop'. $cascade is true/false.
 
