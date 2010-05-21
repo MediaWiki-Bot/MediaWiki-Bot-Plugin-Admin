@@ -1,4 +1,4 @@
-MediaWiki::Bot::Plugin::PLUGINNAME is very easy to install, just run the following commands:
+MediaWiki::Bot::Plugin::Admin is very easy to install, just run the following commands:
 
 1. perl Makefile.PL
 2. make

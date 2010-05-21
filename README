@@ -1,9 +1,11 @@
-MediaWiki::Bot::Plugin::PLUGINNAME
-==========================
+MediaWiki::Bot::Plugin::Admin
+=============================
 
-This is PLUGINNAME, a Perlwikipedia plugin designed to for PURPOSE.
+This is Admin, a Perlwikipedia plugin designed to to automate common
+administrative tasks performed on MediaWiki wikis.
 
 INSTALLATION
+------------
 
 To install this module type the following:
 
@@ -18,22 +20,24 @@ complete because you do not have access to wiki.xyrael.net, you can
 (probably) safely install the module anyway.
 
 DEPENDENCIES
+------------
 
 This module requires these other modules and libraries:
 
-WWW::Mechanize
-XML::Simple
-HTML::Entities
-URI::Escape
-Carp
-Encode
-MediaWiki::API
+* WWW::Mechanize
+* XML::Simple
+* HTML::Entities
+* URI::Escape
+* Carp
+* Encode
+* MediaWiki::API
 
 In addition, you must have MediaWiki::Bot version 1.5.2 or greater for plugin support.
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2006, 2007 by Dan Collins
+Copyright (C) 2006, 2007, 2010 by Dan Collins, Mike.lifeguard, and
+Perlwikipedia contributors
 
 This library is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
