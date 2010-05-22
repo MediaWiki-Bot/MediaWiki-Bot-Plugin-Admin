@@ -3,6 +3,7 @@ Revision history for MediaWiki::Bot::Plugin::Admin
 Unreleased version
 	Changes made since 0.0.1:
 		* Added rollback()
+        * Moved all admin functions from MediaWiki::Bot to this plugin
         * block() now accepts a hashref of options
 0.0.1   Mike.lifeguard  May 14 2010
         * Initial version
