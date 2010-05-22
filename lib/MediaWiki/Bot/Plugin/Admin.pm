@@ -193,25 +193,55 @@ sub delete_old_image { # Needs to use the API
     return $res;
 }
 
-=head2 block($user, $length,[$summary[,$anononly[,$autoblock[,$blockaccountcreation,[$blockemail,[$blocktalk]]]]]])
+=head2 block($options_hashref)
 
-Blocks the user with the specified options. All options optional except $user and $length. Last four are true/false. Defaults to a generic summary, with all options disabled.
+Blocks the user with the specified options. All options optional except user and length. Anononly, autoblock, blockac, blockemail and blocktalk are true/false. Defaults to a generic summary, with all options disabled.
 
-    my $user = 'Vandal account 2';
-    $bot->block($user, 'infinite', 'Vandalism-only account', 1, 1, 1, 0, 1);
+    $bot->block({
+        user        => 'Vandal account 2',
+        length      => 'indefinite',
+        summary     => '[[Project:Vandalism|Vandalism]]',
+        anononly    => 1,
+        autoblock   => 1,
+    });
+
+For backwards compatibility, you can still use this deprecated method call:
+
+    $bot->block('Vandal account', 'infinite', 'Vandalism-only account', 1, 1, 1, 0, 1);
 
 =cut
 
 sub block {
     my $self       = shift;
-    my $user       = shift;
-    my $length     = shift;
-    my $summary    = shift || 'BOT: blocked for abuse';
-    my $anononly   = shift;
-    my $autoblock  = shift;
-    my $blockac    = shift;
-    my $blockemail = shift;
-    my $blocktalk  = shift;
+    my $user;
+    my $length;
+    my $summary;
+    my $anononly;
+    my $autoblock;
+    my $blockac;
+    my $blockemail;
+    my $blocktalk;
+    if (ref $_[0] eq 'HASH') {
+        $user       = $_[0]->{'user'};
+        $length     = $_[0]->{'length'};
+        $summary    = $_[0]->{'summary'};
+        $anononly   = $_[0]->{'anononly'};
+        $autoblock  = $_[0]->{'autoblock'};
+        $blockac    = $_[0]->{'blockac'};
+        $blockemail = $_[0]->{'blockemail'};
+        $blocktalk  = $_[0]->{'blocktalk'};
+    }
+    else {
+        $user       = shift;
+        $length     = shift;
+        $summary    = shift;
+        $anononly   = shift;
+        $autoblock  = shift;
+        $blockac    = shift;
+        $blockemail = shift;
+        $blocktalk  = shift;
+    }
+
     my $res;
     my $edittoken;
 
