@@ -41,7 +41,7 @@ Calling import from any module will, quite simply, transfer these subroutines in
 =cut
 
 use Exporter qw(import);
-our @EXPORT = qw(rollback delete undelete delete_old_image block unblock protect unprotect);
+our @EXPORT = qw(rollback delete undelete delete_old_image block unblock protect unprotect transwiki_import);
 
 =head2 rollback($pagename, $username[,$summary[,$markbot]])
 
@@ -390,6 +390,67 @@ sub protect {
         return $self->_handle_api_error();
     }
 
+    return $res;
+}
+
+=head2 transwiki_import($options_hashref)
+
+Do a I<transwiki> import of a page specified in the hashref.
+
+=over 4
+
+=item *
+prefix must be a valid interwiki on the wiki you're importing to. It specifies where to import from.
+
+=item *
+page is the title to import from the remote wiki, including namespace
+
+=item *
+ns is the namespace I<number> to import I<to>. For example, some wikis have a "Transwiki" namespace to import into where cleanup happens before pages are moved into the main namespace. This defaults to 0.
+
+=item *
+history specifies whether or not to include the full page history. Defaults to 1. In general, you should import the full history, but on very large page histories, this may not be possible. In such cases, try disabling this, or do an XML import.
+
+=item *
+templates specifies whether or not to include templates. Defaults to 0;
+
+=back
+
+=cut
+sub transwiki_import {
+    my $self = shift;
+    my $prefix      = $_[0]->{'prefix'} || 'w';
+    my $page        = $_[0]->{'page'};
+    my $namespace   = $_[0]->{'ns'} || 0;
+    my $history     = defined($_[0]->{'history'}) ? $_[0]->{'history'} : 1;
+    my $templates   = defined($_[0]->{'templates'}) ? $_[0]->{'templates'} : 0;
+
+    my $tokenhash = {
+        action  => 'query',
+        prop    => 'info',
+        titles  => 'Main Page',
+        intoken => 'import',
+    };
+    my $res = $self->{'api'}->api($tokenhash);
+    if (!$res) {
+        return $self->_handle_api_error();
+    }
+    my ($id, $data) = %{ $res->{query}->{pages} };
+    my $importtoken = $data->{'importtoken'};
+
+    my $importhash = {
+        action          => 'import',
+        token           => $importtoken,
+        interwikisource => $prefix,
+        interwikipage   => $page,
+        fullhistory     => $history,
+        namespace       => $namespace,
+        templates       => $templates,
+    };
+    $res = $self->{'api'}->api($importhash);
+    if (!$res) {
+        return $self->_handle_api_error();
+    }
     return $res;
 }
 
