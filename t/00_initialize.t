@@ -18,4 +18,4 @@ $wikipedia=MediaWiki::Bot->new;
 
 ok(defined $wikipedia, "new() works");
 ok($wikipedia->isa("MediaWiki::Bot"), "Right class");
-ok($wikipedia->can("SAMPLESUB"), "Inheritance OK");
+ok($wikipedia->can("delete"), "Inheritance OK");
