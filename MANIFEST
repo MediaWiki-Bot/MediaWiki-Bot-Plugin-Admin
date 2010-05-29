@@ -3,7 +3,7 @@ LICENSE
 Makefile.PL
 MANIFEST
 README
-CHANGES
+Changes
 lib/MediaWiki/Bot/Plugin/Admin.pm
 gpl.txt
 t/00_initialize.t

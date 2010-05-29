@@ -1,0 +1,17 @@
+Revision history for MediaWiki::Bot::Plugin::Admin
+
+Vers.	Rel.Mgr. SVN  Date
+------------------------
+0.1.1	DCOLLINS r275 May 29 2010
+    Changes made since 0.1.0:
+	* Added test scripts
+
+0.1.0	Mike.lif r274 May 29 2010
+    Changes made since 0.0.1:
+	* Added rollback()
+        * Moved all admin functions from MediaWiki::Bot to this plugin
+        * block() now accepts a hashref of options
+        * transwiki_import() was added
+
+0.0.1   Mike.lifeguard  May 14 2010
+        * Initial version
