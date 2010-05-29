@@ -11,7 +11,7 @@ our $VERSION = '3.0.0';
 
 =head1 NAME
 
-MediaWiki::Bot::Plugin::Admin
+MediaWiki::Bot::Plugin::Admin - A plugin to MediaWiki::Bot providing admin functions
 
 =head1 SYNOPSIS
 
