@@ -7,6 +7,8 @@ Changes
 lib/MediaWiki/Bot/Plugin/Admin.pm
 gpl.txt
 t/00_initialize.t
+t/01_delete.t
+t/02_protect.t
 t/97_pod.t
 t/98_pod_coverage.t
 t/99_pod_kwalitee.t
