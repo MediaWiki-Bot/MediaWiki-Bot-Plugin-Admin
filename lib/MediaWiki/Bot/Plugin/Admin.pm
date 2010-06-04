@@ -356,8 +356,8 @@ sub protect {
     my $self    = shift;
     my $page    = shift;
     my $reason  = shift;
-    my $editlvl = shift || 'all'; # 'all'? Or 'sysop'
-    my $movelvl = shift || 'all';
+    my $editlvl = shift || 'sysop';
+    my $movelvl = shift || 'sysop';
     my $time    = shift || 'infinite';
     my $cascade = shift;
 
