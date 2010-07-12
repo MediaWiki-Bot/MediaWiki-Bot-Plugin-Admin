@@ -954,7 +954,7 @@ debian_pkg, CPAN_dist, CPAN_vers, N_bugs, N_patches
 "libmoosex-clone-perl", "MooseX-Clone", "0.05", "0", "1"
 "libmoosex-compiletime-traits-perl", "MooseX-CompileTime-Traits", "0.092801", "1", "0"
 "libmoosex-configfromfile-perl", "MooseX-ConfigFromFile", "not-uploaded", "0", "0"
-"libmoosex-daemonize-perl", "MooseX-Daemonize", "0.10", "0", "2"
+"libmoosex-daemonize-perl", "MooseX-Daemonize", "0.12", "0", "2"
 "libmoosex-declare-perl", "MooseX-Declare", "0.32", "0", "1"
 "libmoosex-emulate-class-accessor-fast-perl", "MooseX-Emulate-Class-Accessor-Fast", "0.00903", "0", "0"
 "libmoosex-getopt-perl", "MooseX-Getopt", "0.31", "0", "2"
