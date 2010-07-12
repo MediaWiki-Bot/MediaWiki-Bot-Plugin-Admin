@@ -7,7 +7,7 @@ use locale;
 use POSIX qw(locale_h);
 setlocale(LC_ALL, "en_US.UTF-8");
 
-our $VERSION = '3.1.0';
+our $VERSION = '3.1.1';
 
 =head1 NAME
 
@@ -343,12 +343,12 @@ sub unprotect { # A convenience function
     my $page   = shift;
     my $reason = shift;
 
-    return $self->protect($page, $reason, '', '');
+    return $self->protect($page, $reason, 'all', 'all');
 }
 
 =head2 protect($page, $reason, $editlvl, $movelvl, $time, $cascade)
 
-Protects (or unprotects) the page. $editlvl and $movelvl may be '', 'autoconfirmed', or 'sysop'. $cascade is true/false.
+Protects (or unprotects) the page. $editlvl and $movelvl may be 'all', 'autoconfirmed', or 'sysop'. $cascade is true/false.
 
 =cut
 
@@ -356,13 +356,16 @@ sub protect {
     my $self    = shift;
     my $page    = shift;
     my $reason  = shift;
-    my $editlvl = shift || 'sysop';
-    my $movelvl = shift || 'sysop';
+    my $editlvl = defined($_[0]) ? shift : 'sysop';
+    my $movelvl = defined($_[0]) ? shift : 'sysop';
     my $time    = shift || 'infinite';
     my $cascade = shift;
 
+    $editlvl = 'all' if $editlvl eq '';
+    $movelvl = 'all' if $movelvl eq '';
+
     if ($cascade and ($editlvl ne 'sysop' or $movelvl ne 'sysop')) {
-        carp "Can't set cascading unless both editlvl and movelvl are sysop.";
+        carp "Can't set cascading unless both editlvl and movelvl are sysop." if $self->{'debug'};
     }
     my $res = $self->{api}->api(
         {
