@@ -5,6 +5,8 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
+use strict;
+use warnings;
 use Test::More tests => 4;
 
 BEGIN {push @INC, "./lib"; use_ok('MediaWiki::Bot') };
@@ -14,8 +16,10 @@ BEGIN {push @INC, "./lib"; use_ok('MediaWiki::Bot') };
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
 
-$wikipedia=MediaWiki::Bot->new;
+my $bot = MediaWiki::Bot->new({
+    agent   => 'MediaWiki::Bot::Plugin::Admin test (00_initialize.t)',
+});
 
-ok(defined $wikipedia, "new() works");
-ok($wikipedia->isa("MediaWiki::Bot"), "Right class");
-ok($wikipedia->can("delete"), "Inheritance OK");
+ok(defined $bot,                        'new() works');
+ok($bot->isa('MediaWiki::Bot'),         'Right class');
+ok($bot->can('delete'),                 'Inheritance OK');

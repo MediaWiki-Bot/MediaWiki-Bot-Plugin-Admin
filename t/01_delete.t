@@ -5,7 +5,9 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 4;
+use strict;
+use warnings;
+use Test::More tests => 7;
 
 #########################
 
@@ -13,34 +15,45 @@ use Test::More tests => 4;
 # its man page ( perldoc Test::More ) for help writing this test script.
 
 use MediaWiki::Bot;
-
-$wikipedia=MediaWiki::Bot->new;
-
-if(defined($ENV{'PWPMakeTestSetWikiHost'})) {
-	$wikipedia->set_wiki($ENV{'PWPMakeTestSetWikiHost'}, $ENV{'PWPMakeTestSetWikiDir'});
-}
+my $username = $ENV{'PWPAdminUsername'};
+my $password = $ENV{'PWPAdminPassword'};
 
 SKIP: {
-if(defined($ENV{'PWPSkipAdminTests'}) and $ENV{'PWPSkipAdminTests'} eq 'true' or !defined($ENV{'PWPAdmin'})) {
-	skip 'Skipping admin tests per $ENV',4;
-}
+    unless (defined($username) and defined($password)) {
+        skip 'Set PWPAdminUsername and PWPAdminPassword in your environment to run tests for this plugin', 4;
+    }
 
-sleep 2;
+    my $bot = MediaWiki::Bot->new({
+        agent   => 'MediaWiki::Bot::Plugin::Admin tests (01_delete.t)',
+        host    => $ENV{'PWPAdminHost'},
+        path    => $ENV{'PWPAdminPath'},
+        login_data => { username => $username, password => $password },
+    });
 
-$wikipedia->login($ENV{'PWPAdmin'}, $ENV{'PWPAdminPW'});
+    $bot->delete("User:$username/01_delete.t");
+    my $text = $bot->get_text("User:$username/01_delete.t");
+    is($text, undef, 'Page does not exist yet');
 
-$text = $wikipedia->get_text("User:ST47/deletetest");
-ok(!defined($text),"Page does not exist yet");
+    my $rand = rand();
+    $bot->edit({
+        page    => "User:$username/01_delete.t",
+        text    => $rand,
+        summary => 'MediaWiki::Bot::Plugin::Admin tests (01_delete.t)',
+    });
+    $text = $bot->get_text("User:$username/01_delete.t");
+    is($text, $rand, 'Page created successfully');
 
-$rand = rand();
-$wikipedia->edit("User:ST47/deletetest", $rand);
-$text = $wikipedia->get_text("User:ST47/deletetest");
-is($text,$rand,"Page created successfully");
-my $status = $wikipedia->delete("User:ST47/deletetest","MediaWiki::Bot tests");
-#eval { use Data::Dumper; print STDERR Dumper($status); };
-#if ($@) {print "#Couldn't load Data::Dumper\n"}
-#ok( $status->isa("HTTP::Response") );
-$text = $wikipedia->get_text("User:ST47/deletetest");
-isnt($text,$rand,"Page does not contain \$rand");
-ok(!defined($text),"Page was deleted");
+    $bot->delete("User:$username/01_delete.t", 'MediaWiki::Bot::Plugin::Admin tests (01_delete.t)');
+    $text = $bot->get_text("User:$username/01_delete.t");
+    isnt($text, $rand, 'Page does not contain $rand');
+    is($text,   undef, 'Page was deleted');
+
+    $bot->undelete("User:$username/01_delete.t", 'MediaWiki::Bot::Plugin::Admin tests (01_delete.t)');
+    $text = $bot->get_text("User:$username/01_delete.t");
+    is($text, $rand, 'Page does contain $rand');
+
+    $bot->delete("User:$username/01_delete.t", 'MediaWiki::Bot::Plugin::Admin tests (01_delete.t)');
+    $text = $bot->get_text("User:$username/01_delete.t");
+    isnt($text, $rand, 'Page does not contain $rand');
+    is($text,   undef, 'Page was deleted');
 }
