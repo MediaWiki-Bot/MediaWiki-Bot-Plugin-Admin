@@ -7,7 +7,7 @@ use locale;
 use POSIX qw(locale_h);
 setlocale(LC_ALL, "en_US.UTF-8");
 
-our $VERSION = '3.1.1';
+our $VERSION = '3.1.2';
 
 =head1 NAME
 

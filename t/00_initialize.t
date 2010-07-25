@@ -9,7 +9,10 @@ use strict;
 use warnings;
 use Test::More tests => 4;
 
-BEGIN {push @INC, "./lib"; use_ok('MediaWiki::Bot') };
+BEGIN {
+    push @INC, "./lib";
+    use_ok('MediaWiki::Bot');
+};
 
 #########################
 
@@ -21,5 +24,13 @@ my $bot = MediaWiki::Bot->new({
 });
 
 ok(defined $bot,                        'new() works');
-ok($bot->isa('MediaWiki::Bot'),         'Right class');
-ok($bot->can('delete'),                 'Inheritance OK');
+isa_ok($bot, 'MediaWiki::Bot',          'Right class');
+my @methods = qw(delete     undelete
+                protect     unprotect
+                block       unblock
+                rollback
+                delete_old_image
+                transwiki_import
+            );
+can_ok($bot, @methods);
+
