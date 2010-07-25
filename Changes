@@ -2,9 +2,10 @@ Revision history for MediaWiki::Bot::Plugin::Admin
 
 Vers.	Rel.Mgr. SVN  Date
 ------------------------
-3.1.1   Mike.lif HEAD Unreleased
+3.1.1   Mike.lif r409 25 July 2010
     Changes made since 3.1.0:
         * Fixed unprotection
+
 3.1.0   Mike.lif r302 05 June 2010
     Changes made since 0.1.1:
         * Synchronize version number with MediaWiki::Bot
