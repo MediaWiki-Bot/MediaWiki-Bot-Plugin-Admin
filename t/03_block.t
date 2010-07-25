@@ -20,7 +20,7 @@ my $password = $ENV{'PWPAdminPassword'};
 
 SKIP: {
     unless (defined($username) and defined($password)) {
-        skip 'Set PWPAdminUsername and PWPAdminPassword in your environment to run tests for this plugin', 4;
+        skip 'Set PWPAdminUsername and PWPAdminPassword in your environment to run tests for this plugin', 8;
     }
 
     my $summary  = 'MediaWiki::Bot::Plugin::Admin tests (03_block.t)';

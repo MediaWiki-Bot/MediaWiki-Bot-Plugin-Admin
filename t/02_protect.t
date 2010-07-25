@@ -18,13 +18,13 @@ use MediaWiki::Bot;
 
 my $username = $ENV{'PWPAdminUsername'};
 my $password = $ENV{'PWPAdminPassword'};
-my $page     = "User:$username/02 protect.t";
-my $cascade_page = "User:$username/02 protect.t (2)";
 
 SKIP: {
     unless (defined($username) and defined($password)) {
         skip 'Set PWPAdminUsername and PWPAdminPassword in your environment to run tests for this plugin', 13;
     }
+    my $page     = "User:$username/02 protect.t";
+    my $cascade_page = "User:$username/02 protect.t (2)";
 
     # Create bot objects to play with
     my $bot = MediaWiki::Bot->new({
