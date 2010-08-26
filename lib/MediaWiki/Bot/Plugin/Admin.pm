@@ -1,17 +1,13 @@
 package MediaWiki::Bot::Plugin::Admin;
+# ABSTRACT: A plugin to MediaWiki::Bot providing admin functions
+
 use strict;
 use warnings;
 #use diagnostics;
 use Carp;
-use locale;
-use POSIX qw(locale_h);
-setlocale(LC_ALL, "en_US.UTF-8");
 
-our $VERSION = '3.1.2';
+our $VERSION = '3.2.0';
 
-=head1 NAME
-
-MediaWiki::Bot::Plugin::Admin - A plugin to MediaWiki::Bot providing admin functions
 
 =head1 SYNOPSIS
 
@@ -41,7 +37,7 @@ Calling import from any module will, quite simply, transfer these subroutines in
 =cut
 
 use Exporter qw(import);
-our @EXPORT = qw(rollback delete undelete delete_old_image block unblock protect unprotect transwiki_import);
+our @EXPORT = qw(rollback delete undelete delete_archived_image block unblock protect unprotect transwiki_import);
 
 =head2 rollback($pagename, $username[,$summary[,$markbot]])
 
@@ -60,20 +56,16 @@ sub rollback {
     my $summary   = shift;
     my $markbot   = shift;
 
-    my $hash = {
+    my $res = $self->{api}->edit({
         action  => 'rollback',
         title   => $page,
         user    => $user,
         summary => $summary,
         markbot => $markbot,
-    };
-    my $res = $self->{api}->edit($hash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
-    else {
-        return $res;
-    }
+    });
+    return $self->_handle_api_error() unless $res;
+
+    return $res;
 }
 
 =head2 delete($page[,$summary])
@@ -92,27 +84,23 @@ sub delete {
     my $page    = shift;
     my $summary = shift || 'BOT: deleted page by command';
 
-    my $res = $self->{api}->api(
-        {
-            action  => 'query',
-            titles  => $page,
-            prop    => 'info|revisions',
-            intoken => 'delete'
-        }
-    );
+    my $res = $self->{api}->api({
+        action  => 'query',
+        titles  => $page,
+        prop    => 'info|revisions',
+        intoken => 'delete'
+    });
     my ($id, $data) = %{ $res->{query}->{pages} };
     my $edittoken = $data->{deletetoken};
-    $res = $self->{api}->api(
-        {
-            action => 'delete',
-            title  => $page,
-            token  => $edittoken,
-            reason => $summary
-        }
-    );
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
+
+    $res = $self->{api}->api({
+        action => 'delete',
+        title  => $page,
+        token  => $edittoken,
+        reason => $summary
+    });
+    return $self->_handle_api_error() unless $res;
+
     return $res;
 }
 
@@ -130,67 +118,55 @@ sub undelete {
     my $summary = shift || 'BOT: undeleting page by command';
 
     # http://meta.wikimedia.org/w/api.php?action=query&list=deletedrevs&titles=User:Mike.lifeguard/sandbox&drprop=token&drlimit=1
-    my $tokenhash = {
+    my $token_results = $self->{api}->api({
         action  => 'query',
         list    => 'deletedrevs',
         titles  => $page,
         drlimit => 1,
         drprop  => 'token',
-    };
-    my $token_results = $self->{api}->api($tokenhash);
+    });
     my $token = $token_results->{'query'}->{'deletedrevs'}->[0]->{'token'};
 
-    my $hash = {
+    my $res = $self->{api}->api({
         action  => 'undelete',
         title   => $page,
         reason  => $summary,
         token   => $token,
-    };
-    my $res = $self->{api}->api($hash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
-    else {
-        return $res;
-    }
+    });
+    return $self->_handle_api_error() unless $res;
+
+    return $res;
 }
 
-=head2 delete_old_image($page, $revision[,$summary])
+=head2 delete_archived_image($archivename, $summary)
 
 Deletes the specified revision of the image with the specified summary. A generic summary will be used if you omit $summary.
 
-# Get the revision number somehow
-$bot->delete_old_image('Image
+    # Get the archivename somehow (from iiprop)
+    $bot->delete_archived_image('20080606222744!Albert_Einstein_Head.jpg', 'test');
 
 =cut
 
-sub delete_old_image { # Needs to use the API
+sub delete_archived_image {
     my $self    = shift;
-    my $page    = shift;
-    my $id      = shift;
+    my $archive = shift;
     my $summary = shift || 'BOT: deleting old version of image by command';
-    my $image   = $page;
 
-    $image =~ s/\s/_/g; # Why?
-    $image =~ s/\%20/_/g; # Why? Just url-un-encode if we really need this.
-    $image =~ s/^(Image:|File:)//gi;
+    my ($timestamp, $file) = split(m/!/, $archive);
 
-    my $res = $self->_get($page, 'delete', "&oldimage=$id%21$image");
-    unless ($res) { return; }
-    my $options = {
-        fields => {
-            wpReason => $summary,
-        },
-    };
-    $res = $self->{mech}->submit_form(%{$options});
+    my ($token) = $self->_get_edittoken($file);
 
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
+    my $res = $self->{'api'}->api({
+        action   => 'delete',
+        title    => "File:$file",
+        token    => $token,
+        reason   => $summary,
+        oldimage => $archive,
+    });
+    return $self->_handle_api_error() unless $res;
 
-    #use Data::Dumper;print Dumper($res);
-    #print $res->decoded_content."\n";
     return $res;
+
 }
 
 =head2 block($options_hashref)
@@ -249,14 +225,12 @@ sub block {
         $edittoken = $self->{'blocktoken'};
     }
     else {
-        $res = $self->{api}->api(
-            {
-                action  => 'query',
-                titles  => 'Main_Page',
-                prop    => 'info|revisions',
-                intoken => 'block'
-            }
-        );
+        $res = $self->{api}->api({
+            action  => 'query',
+            titles  => 'Main_Page',
+            prop    => 'info|revisions',
+            intoken => 'block'
+        });
         my ($id, $data) = %{ $res->{query}->{pages} };
         $edittoken = $data->{blocktoken};
         $self->{'blocktoken'} = $edittoken;
@@ -301,14 +275,12 @@ sub unblock {
         $edittoken = $self->{'unblocktoken'};
     }
     else {
-        $res = $self->{api}->api(
-            {
-                action  => 'query',
-                titles  => 'Main_Page',
-                prop    => 'info|revisions',
-                intoken => 'unblock'
-            }
-        );
+        $res = $self->{api}->api({
+            action  => 'query',
+            titles  => 'Main_Page',
+            prop    => 'info|revisions',
+            intoken => 'unblock'
+        });
         my ($id, $data) = %{ $res->{query}->{pages} };
         $edittoken = $data->{unblocktoken};
         $self->{'unblocktoken'} = $edittoken;
@@ -367,31 +339,27 @@ sub protect {
     if ($cascade and ($editlvl ne 'sysop' or $movelvl ne 'sysop')) {
         carp "Can't set cascading unless both editlvl and movelvl are sysop." if $self->{'debug'};
     }
-    my $res = $self->{api}->api(
-        {
-            action  => 'query',
-            titles  => $page,
-            prop    => 'info|revisions',
-            intoken => 'protect'
-        }
-    );
+    my $res = $self->{api}->api({
+        action  => 'query',
+        titles  => $page,
+        prop    => 'info|revisions',
+        intoken => 'protect'
+    });
 
     #use Data::Dumper;print STDERR Dumper($res);
-    my ($id, $data) = %{ $res->{query}->{pages} };
-    my $edittoken = $data->{protecttoken};
-    my $hash      = {
+    my ($id, $data) = %{ $res->{'query'}->{'pages'} };
+    my $edittoken = $data->{'protecttoken'};
+
+    $res = $self->{api}->api({
         action      => 'protect',
         title       => $page,
         token       => $edittoken,
         reason      => $reason,
         protections => "edit=$editlvl|move=$movelvl",
-        expiry      => $time
-    };
-    $hash->{'cascade'} = $cascade if ($cascade);
-    $res = $self->{api}->api($hash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
+        expiry      => $time,
+        cascade     => $cascade,
+    });
+    return $self->_handle_api_error() unless $res;
 
     return $res;
 }
@@ -428,20 +396,18 @@ sub transwiki_import {
     my $history     = defined($_[0]->{'history'}) ? $_[0]->{'history'} : 1;
     my $templates   = defined($_[0]->{'templates'}) ? $_[0]->{'templates'} : 0;
 
-    my $tokenhash = {
+    my $res = $self->{'api'}->api({
         action  => 'query',
         prop    => 'info',
         titles  => 'Main Page',
         intoken => 'import',
-    };
-    my $res = $self->{'api'}->api($tokenhash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
-    my ($id, $data) = %{ $res->{query}->{pages} };
+    });
+    return $self->_handle_api_error() unless $res;
+
+    my ($id, $data) = %{ $res->{'query'}->{'pages'} };
     my $importtoken = $data->{'importtoken'};
 
-    my $importhash = {
+    $res = $self->{'api'}->api({
         action          => 'import',
         token           => $importtoken,
         interwikisource => $prefix,
@@ -449,11 +415,9 @@ sub transwiki_import {
         fullhistory     => $history,
         namespace       => $namespace,
         templates       => $templates,
-    };
-    $res = $self->{'api'}->api($importhash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
+    });
+    return $self->_handle_api_error() unless $res;
+
     return $res;
 }
 

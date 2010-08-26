@@ -25,12 +25,6 @@ my $bot = MediaWiki::Bot->new({
 
 ok(defined $bot,                        'new() works');
 isa_ok($bot, 'MediaWiki::Bot',          'Right class');
-my @methods = qw(delete     undelete
-                protect     unprotect
-                block       unblock
-                rollback
-                delete_old_image
-                transwiki_import
-            );
+my @methods = @MediaWiki::Bot::Plugin::Admin::EXPORT;
 can_ok($bot, @methods);
 
