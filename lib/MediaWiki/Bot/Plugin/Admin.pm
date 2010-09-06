@@ -6,7 +6,7 @@ use warnings;
 #use diagnostics;
 use Carp;
 
-our $VERSION = '3.2.0';
+our $VERSION = '3.2.1';
 
 
 =head1 SYNOPSIS
