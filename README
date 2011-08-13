@@ -3,7 +3,7 @@ NAME
     admin functions
 
 VERSION
-    version 3.2.1
+    version 3.3.0
 
 SYNOPSIS
         use MediaWiki::Bot;
@@ -18,9 +18,6 @@ SYNOPSIS
 DESCRIPTION
     A plugin to the MediaWiki::Bot framework to provide administrative
     functions to a bot.
-
-AUTHOR
-    The Perlwikipedia team
 
 METHODS
   import()
@@ -95,9 +92,10 @@ METHODS
     Unprotects a page. You can also set parameters for protect() such that
     the page is unprotected.
 
-    my @obsolete_protections = ('Main Page', 'Project:Community Portal',
-    'Template:Tlx'); foreach my $page (@obsolete_protections) {
-    $bot->unprotect($page, 'Removing old obsolete page protection'); }
+        my @obsolete_protections = ('Main Page', 'Project:Community Portal', 'Template:Tlx');
+        foreach my $page (@obsolete_protections) {
+            $bot->unprotect($page, 'Removing old obsolete page protection');
+        }
 
   protect($page, $reason, $editlvl, $movelvl, $time, $cascade)
     Protects (or unprotects) the page. $editlvl and $movelvl may be 'all',
@@ -124,6 +122,11 @@ METHODS
     *   templates specifies whether or not to include templates. Defaults to
         0;
 
+  xml_import
+        $bot->xml_import($filename);
+
+    Import an XML file to the wiki. Specify the filename of an XML dump.
+
 AUTHORS
     *   Dan Collins <en.wp.2t47@gmail.com>
 
@@ -132,7 +135,7 @@ AUTHORS
     *   patch and bug report contributors
 
 COPYRIGHT AND LICENSE
-    This software is Copyright (c) 2010 by the MediaWiki::Bot team
+    This software is Copyright (c) 2011 by the MediaWiki::Bot team
     <perlwikibot@googlegroups.com>.
 
     This is free software, licensed under:
