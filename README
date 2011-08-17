@@ -3,7 +3,7 @@ NAME
     admin functions
 
 VERSION
-    version 3.3.0
+    version 0.001
 
 SYNOPSIS
         use MediaWiki::Bot;
@@ -126,6 +126,62 @@ METHODS
         $bot->xml_import($filename);
 
     Import an XML file to the wiki. Specify the filename of an XML dump.
+
+  set_usergroups
+    Sets the user's group membership to the given list. You cannot change
+    membership in *, user, or autoconfirmed, so you don't need to list them.
+    There may also be other limits on which groups you can set/unset on a
+    given wiki with a given account which may result in an error. In an
+    error condition, it is undefined whether any group membership changes
+    are made.
+
+    The list returned is the user's new group membership.
+
+        $bot->set_usergroups('Mike.lifeguard', ['sysop'], "He deserves it");
+
+  add_usergroups
+    Add the user to the specified usergroups:
+
+        $bot->add_usergroups('Mike.lifeguard', ['sysop', 'editor'], "for fun");
+
+    Returns the list of added usergroups, not the full group membership list
+    like set_usergroups does.
+
+  remove_usergroups
+    Revoke the user's membership in the listed groups:
+
+        $bot->remove_usergroups('Mike.lifeguard', ['sysop', 'editor'], "Danger to himself & others");
+
+    Returns the list of removed groups, not the full group membership list
+    like set_usergroups does.
+
+AVAILABILITY
+    The project homepage is
+    <https://metacpan.org/module/MediaWiki::Bot::Plugin::Admin>.
+
+    The latest version of this module is available from the Comprehensive
+    Perl Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a
+    CPAN site near you, or see
+    <http://search.cpan.org/dist/MediaWiki-Bot-Plugin-Admin/>.
+
+    The development version lives at
+    <http://github.com/mikelifeguard/MediaWiki-Bot-Plugin-Admin> and may be
+    cloned from
+    <git://github.com/mikelifeguard/MediaWiki-Bot-Plugin-Admin.git>. Instead
+    of sending patches, please fork this project using the standard git and
+    github infrastructure.
+
+SOURCE
+    The development version is on github at
+    <http://github.com/mikelifeguard/MediaWiki-Bot-Plugin-Admin> and may be
+    cloned from
+    <git://github.com/mikelifeguard/MediaWiki-Bot-Plugin-Admin.git>
+
+BUGS AND LIMITATIONS
+    No bugs have been reported.
+
+    Please report any bugs or feature requests through the web interface at
+    <http://rt.cpan.org>.
 
 AUTHORS
     *   Dan Collins <en.wp.2t47@gmail.com>
