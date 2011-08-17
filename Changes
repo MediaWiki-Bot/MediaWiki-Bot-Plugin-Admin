@@ -1,26 +1,23 @@
-Revision history for MediaWiki::Bot::Plugin::Admin
+Changelog for {{$dist->name}}
 
-Vers.	Rel.Mgr. SVN  Date
-------------------------
-3.1.1   Mike.lif r409 25 July 2010
-    Changes made since 3.1.0:
-        * Fixed unprotection
+{{$NEXT}}
+    * Add support for changing usergroups
 
-3.1.0   Mike.lif r302 05 June 2010
-    Changes made since 0.1.1:
-        * Synchronize version number with MediaWiki::Bot
-        * default values of protect() are now correct
+3.1.1   2010-07-25
+    * Fixed unprotection
 
-0.1.1	DCOLLINS r279 May 29 2010
-    Changes made since 0.1.0:
-        * Added test scripts
+3.1.0   2010-06-05
+    * Synchronize version number with MediaWiki::Bot
+    * default values of protect() are now correct
 
-0.1.0	Mike.lif r274 May 29 2010
-    Changes made since 0.0.1:
-        * Added rollback()
-        * Moved all admin functions from MediaWiki::Bot to this plugin
-        * block() now accepts a hashref of options
-        * transwiki_import() was added
+0.1.1   2010-05-29
+    * Added test scripts
 
-0.0.1   Mike.lifeguard  May 14 2010
-        * Initial version
+0.1.0   2010-05-29
+    * Added rollback()
+    * Moved all admin functions from MediaWiki::Bot to this plugin
+    * block() now accepts a hashref of options
+    * transwiki_import() was added
+
+0.0.1   2010-05-14
+    * Initial version

@@ -5,8 +5,9 @@ use strict;
 use warnings;
 #use diagnostics;
 use Carp;
+use List::Compare;
 
-our $VERSION = '3.3.0';
+# VERSION
 
 =head1 SYNOPSIS
 
@@ -37,7 +38,14 @@ MediaWiki::Bot automatically imports plugins if found.
 =cut
 
 use Exporter qw(import);
-our @EXPORT = qw(rollback delete undelete delete_archived_image block unblock protect unprotect transwiki_import xml_import);
+our @EXPORT = qw(
+    rollback
+    delete undelete delete_archived_image
+    block unblock
+    protect unprotect
+    transwiki_import xml_import
+    set_usergroups add_usergroups remove_usergroups
+);
 
 =head2 rollback($pagename, $username[,$summary[,$markbot]])
 
@@ -460,6 +468,129 @@ sub xml_import {
     });
     return $self->_handle_api_error() unless $success;
     return $success;
+}
+
+=head2 set_usergroups
+
+Sets the user's group membership to the given list. You cannot change membership in
+*, user, or autoconfirmed, so you don't need to list them. There may also be other
+limits on which groups you can set/unset on a given wiki with a given account which
+may result in an error. In an error condition, it is undefined whether any group
+membership changes are made.
+
+The list returned is the user's new group membership.
+
+    $bot->set_usergroups('Mike.lifeguard', ['sysop'], "He deserves it");
+
+=cut
+
+sub set_usergroups {
+    my $self    = shift;
+    my $user    = shift;
+    my $rights  = shift;
+    my $summary = shift;
+
+    $user =~ s/^User://;
+
+    unless ($self->{userrightscache} and $self->{userrightscache}->{user} eq $user) {
+        $self->usergroups($user);
+    }
+    my $compare = List::Compare->new({
+        lists => [ $self->{userrightscache}->{groups}, $rights ],
+        unsorted    => 1,
+    });
+    my %add    = map { $_ => 1 } $compare->get_complement;
+    my %remove = map { $_ => 1 } $compare->get_unique;
+    delete $add{ $_ }    for qw(* user autoconfirmed);
+    delete $remove{ $_ } for qw(* user autoconfirmed);
+
+    my $hash = {
+        action  => 'userrights',
+        user    => $user,
+        add     => join('|', keys %add),
+        remove  => join('|', keys %remove),
+        reason  => $summary,
+        token   => $self->{userrightscache}->{token},
+    };
+    my $res = $self->{api}->api($hash);
+    return $self->_handle_api_error() unless $res;
+
+    my %new_usergroups = map { $_ => 1 } @{ $self->{userrightscache}->{groups} };
+    delete $new_usergroups{ $_ } for @{ $res->{userrights}->{removed} };
+    $new_usergroups{ $_ } = 1 for @{ $res->{userrights}->{added} };
+    delete $self->{userrightscache};
+    return keys %new_usergroups;
+}
+
+=head2 add_usergroups
+
+Add the user to the specified usergroups:
+
+    $bot->add_usergroups('Mike.lifeguard', ['sysop', 'editor'], "for fun");
+
+Returns the list of added usergroups, not the full group membership list like set_usergroups does.
+
+=cut
+
+sub add_usergroups {
+    my $self    = shift;
+    my $user    = shift;
+    my $rights  = shift;
+    my $summary = shift;
+
+    $user =~ s/^User://;
+
+    unless (exists $self->{userrightscache} and exists $self->{userrightscache}->{user} and $self->{userrightscache}->{user} eq $user) {
+        $self->usergroups($user);
+    }
+
+    my $res = $self->{api}->api({
+        action  => 'userrights',
+        user    => $user,
+        add     => @$rights,
+        reason  => $summary,
+        token   => $self->{userrightscache}->{token},
+    });
+    return $self->_handle_api_error() unless $res;
+
+    delete $self->{userrightscache};
+    return @{ $res->{userrights}->{added} };
+}
+
+
+=head2 remove_usergroups
+
+Revoke the user's membership in the listed groups:
+
+    $bot->remove_usergroups('Mike.lifeguard', ['sysop', 'editor'], "Danger to himself & others");
+
+Returns the list of removed groups, not the full group membership list like set_usergroups does.
+
+=cut
+
+sub remove_usergroups {
+    my $self    = shift;
+    my $user    = shift;
+    my $rights  = shift;
+    my $summary = shift;
+
+    $user =~ s/^User://;
+
+    unless (exists $self->{userrightscache} and exists $self->{userrightscache}->{user} and $self->{userrightscache}->{user} eq $user) {
+        $self->usergroups($user);
+    }
+
+    my $res = $self->{api}->api({
+        action  => 'userrights',
+        user    => $user,
+        remove  => @$rights,
+        reason  => $summary,
+        token   => $self->{userrightscache}->{token},
+    });
+    return $self->_handle_api_error() unless $res;
+
+    delete $self->{userrightscache};
+    return @{ $res->{userrights}->{removed} };
 }
 
 1;
