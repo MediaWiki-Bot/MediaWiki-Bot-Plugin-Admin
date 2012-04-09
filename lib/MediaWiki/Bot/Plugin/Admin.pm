@@ -107,7 +107,7 @@ sub delete {
         prop    => 'info|revisions',
         intoken => 'delete'
     });
-    my ($id, $data) = %{ $res->{query}->{pages} };
+    my $data = [ %{ $res->{query}->{pages} } ]->[1];
     my $edittoken = $data->{deletetoken};
 
     $res = $self->{api}->api({
@@ -143,7 +143,7 @@ sub undelete {
         drlimit => 1,
         drprop  => 'token',
     });
-    my $token = $token_results->{'query'}->{'deletedrevs'}->[0]->{'token'};
+    my $token = $token_results->{query}->{deletedrevs}->[0]->{token};
 
     my $res = $self->{api}->api({
         action  => 'undelete',
@@ -171,11 +171,11 @@ sub delete_archived_image {
     my $archive = shift;
     my $summary = shift || 'BOT: deleting old version of image by command';
 
-    my ($timestamp, $file) = split(m/!/, $archive);
+    my $file = [ split m/!/, $archive ]->[1];
 
     my ($token) = $self->_get_edittoken($file);
 
-    my $res = $self->{'api'}->api({
+    my $res = $self->{api}->api({
         action   => 'delete',
         title    => "File:$file",
         token    => $token,
@@ -209,7 +209,7 @@ For backwards compatibility, you can still use this deprecated method call:
 =cut
 
 sub block {
-    my $self       = shift;
+    my $self = shift;
     my $user;
     my $length;
     my $summary;
@@ -219,14 +219,14 @@ sub block {
     my $blockemail;
     my $blocktalk;
     if (ref $_[0] eq 'HASH') {
-        $user       = $_[0]->{'user'};
-        $length     = $_[0]->{'length'};
-        $summary    = $_[0]->{'summary'};
-        $anononly   = $_[0]->{'anononly'};
-        $autoblock  = $_[0]->{'autoblock'};
-        $blockac    = $_[0]->{'blockac'};
-        $blockemail = $_[0]->{'blockemail'};
-        $blocktalk  = $_[0]->{'blocktalk'};
+        $user       = $_[0]->{user};
+        $length     = $_[0]->{length};
+        $summary    = $_[0]->{summary};
+        $anononly   = $_[0]->{anononly};
+        $autoblock  = $_[0]->{autoblock};
+        $blockac    = $_[0]->{blockac};
+        $blockemail = $_[0]->{blockemail};
+        $blocktalk  = $_[0]->{blocktalk};
     }
     else {
         $user       = shift;
@@ -242,8 +242,8 @@ sub block {
     my $res;
     my $edittoken;
 
-    if ($self->{'blocktoken'}) {
-        $edittoken = $self->{'blocktoken'};
+    if ($self->{blocktoken}) {
+        $edittoken = $self->{blocktoken};
     }
     else {
         $res = $self->{api}->api({
@@ -252,9 +252,9 @@ sub block {
             prop    => 'info|revisions',
             intoken => 'block'
         });
-        my ($id, $data) = %{ $res->{query}->{pages} };
+        my $data = [ %{ $res->{query}->{pages} } ]->[1];
         $edittoken = $data->{blocktoken};
-        $self->{'blocktoken'} = $edittoken;
+        $self->{blocktoken} = $edittoken;
     }
     my $hash = {
         action => 'block',
@@ -292,8 +292,8 @@ sub unblock {
 
     my $res;
     my $edittoken;
-    if ($self->{'unblocktoken'}) {
-        $edittoken = $self->{'unblocktoken'};
+    if ($self->{unblocktoken}) {
+        $edittoken = $self->{unblocktoken};
     }
     else {
         $res = $self->{api}->api({
@@ -302,9 +302,9 @@ sub unblock {
             prop    => 'info|revisions',
             intoken => 'unblock',
         });
-        my ($id, $data) = %{ $res->{query}->{pages} };
+        my $data = [ %{ $res->{query}->{pages} } ]->[1];
         $edittoken = $data->{unblocktoken};
-        $self->{'unblocktoken'} = $edittoken;
+        $self->{unblocktoken} = $edittoken;
     }
 
     my $hash = {
@@ -314,9 +314,7 @@ sub unblock {
         reason => $summary,
     };
     $res = $self->{api}->api($hash);
-    if (!$res) {
-        return $self->_handle_api_error();
-    }
+    return $self->_handle_api_error() unless $res;
 
     return $res;
 }
@@ -361,7 +359,7 @@ sub protect {
     $movelvl = 'all' if $movelvl eq '';
 
     if ($cascade and ($editlvl ne 'sysop' or $movelvl ne 'sysop')) {
-        carp "Can't set cascading unless both editlvl and movelvl are sysop." if $self->{'debug'};
+        carp "Can't set cascading unless both editlvl and movelvl are sysop." if $self->{debug};
     }
     my $res = $self->{api}->api({
         action  => 'query',
@@ -370,9 +368,8 @@ sub protect {
         intoken => 'protect'
     });
 
-    #use Data::Dumper;print STDERR Dumper($res);
-    my ($id, $data) = %{ $res->{'query'}->{'pages'} };
-    my $edittoken = $data->{'protecttoken'};
+    my $data = [ %{ $res->{query}->{pages} } ]->[1];
+    my $edittoken = $data->{protecttoken};
 
     $res = $self->{api}->api({
         action      => 'protect',
@@ -420,13 +417,13 @@ templates specifies whether or not to include templates. Defaults to 0;
 =cut
 sub transwiki_import {
     my $self = shift;
-    my $prefix      = $_[0]->{'prefix'} || 'w';
-    my $page        = $_[0]->{'page'};
-    my $namespace   = $_[0]->{'ns'} || 0;
-    my $history     = defined($_[0]->{'history'}) ? $_[0]->{'history'} : 1;
-    my $templates   = defined($_[0]->{'templates'}) ? $_[0]->{'templates'} : 0;
+    my $prefix      = $_[0]->{prefix} || 'w';
+    my $page        = $_[0]->{page};
+    my $namespace   = $_[0]->{ns} || 0;
+    my $history     = defined($_[0]->{history}) ? $_[0]->{history} : 1;
+    my $templates   = defined($_[0]->{templates}) ? $_[0]->{templates} : 0;
 
-    my $res = $self->{'api'}->api({
+    my $res = $self->{api}->api({
         action  => 'query',
         prop    => 'info',
         titles  => 'Main Page',
@@ -434,10 +431,10 @@ sub transwiki_import {
     });
     return $self->_handle_api_error() unless $res;
 
-    my ($id, $data) = %{ $res->{'query'}->{'pages'} };
-    my $importtoken = $data->{'importtoken'};
+    my $data = [ %{ $res->{query}->{pages} } ]->[1];
+    my $importtoken = $data->{importtoken};
 
-    $res = $self->{'api'}->api({
+    $res = $self->{api}->api({
         action          => 'import',
         token           => $importtoken,
         interwikisource => $prefix,
@@ -493,7 +490,11 @@ sub set_usergroups {
 
     $user =~ s/^User://;
 
-    unless ($self->{userrightscache} and $self->{userrightscache}->{user} eq $user) {
+    unless (
+        exists $self->{userrightscache}
+        and $self->{userrightscache}
+        and $self->{userrightscache}->{user} eq $user
+    ) {
         $self->usergroups($user);
     }
     my $compare = List::Compare->new({
@@ -541,7 +542,11 @@ sub add_usergroups {
 
     $user =~ s/^User://;
 
-    unless (exists $self->{userrightscache} and exists $self->{userrightscache}->{user} and $self->{userrightscache}->{user} eq $user) {
+    unless (
+        exists $self->{userrightscache}
+        and exists $self->{userrightscache}->{user}
+        and $self->{userrightscache}->{user} eq $user
+    ) {
         $self->usergroups($user);
     }
 
@@ -577,7 +582,11 @@ sub remove_usergroups {
 
     $user =~ s/^User://;
 
-    unless (exists $self->{userrightscache} and exists $self->{userrightscache}->{user} and $self->{userrightscache}->{user} eq $user) {
+    unless (
+        exists $self->{userrightscache}
+        and exists $self->{userrightscache}->{user}
+        and $self->{userrightscache}->{user} eq $user
+    ) {
         $self->usergroups($user);
     }
 
