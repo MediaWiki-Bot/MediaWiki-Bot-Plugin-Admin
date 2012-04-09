@@ -2,6 +2,7 @@ Changelog for {{$dist->name}}
 
 {{$NEXT}}
     * Add support for changing usergroups
+    * Use the provided unblock summary
 
 3.1.1   2010-07-25
     * Fixed unprotection

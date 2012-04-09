@@ -300,7 +300,7 @@ sub unblock {
             action  => 'query',
             titles  => 'Main_Page',
             prop    => 'info|revisions',
-            intoken => 'unblock'
+            intoken => 'unblock',
         });
         my ($id, $data) = %{ $res->{query}->{pages} };
         $edittoken = $data->{unblocktoken};
@@ -310,7 +310,8 @@ sub unblock {
     my $hash = {
         action => 'unblock',
         user   => $user,
-        token  => $edittoken
+        token  => $edittoken,
+        reason => $summary,
     };
     $res = $self->{api}->api($hash);
     if (!$res) {
