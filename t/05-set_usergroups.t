@@ -1,25 +1,43 @@
+#!perl
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More;
 use MediaWiki::Bot;
+
+my $username = $ENV{PWPAdminUsername};
+my $password = $ENV{PWPAdminPassword};
+my $host     = $ENV{PWPAdminHost};
+my $path     = $ENV{PWPAdminPath};
+plan $username && $password && $host
+    ? (tests => 4)
+    : (skip_all => 'test wiki and admin login required');
+
 my $t = __FILE__;
+my $summary = "MediaWiki::Bot::Plugin::Admin tests ($t)";
 
-my $username = $ENV{'PWPAdminUsername'};
-my $password = $ENV{'PWPAdminPassword'};
-SKIP: {
-    unless (defined($username) and defined($password)) {
-        skip 'Set PWPAdminUsername and PWPAdminPassword in your environment to run tests for this plugin', 1;
-    }
-    my $bot = MediaWiki::Bot->new({
-        agent   => "MediaWiki::Bot tests ($t)",
-        host    => $ENV{'PWPAdminHost'} || 'test.wikipedia.org',
-        path    => $ENV{'PWPAdminPath'} || 'w',
-        login_data => { username => $username, password => $password },
-    });
+my $bot = MediaWiki::Bot->new({
+    agent   => $summary,
+    host    => $host,
+    ($path ? (path => $path) : ()),
+    login_data => { username => $username, password => $password },
+});
 
-    my @set_groups = qw(editor);
-    my @new_usergroups = $bot->set_usergroups('Set userrights-testing', \@set_groups, $t);
-    my %new_usergroups = map { $_ => 1 } @new_usergroups;
-    delete $new_usergroups{ $_ } for qw(* user autoconfirmed);
-    is_deeply [ sort keys %new_usergroups ], [ sort @set_groups ], q{Rights set to what we wanted};
-}
+my @groups = qw(editor);
+my @new_usergroups = $bot->set_usergroups('Perlwikibot testing', \@groups, $t);
+my %new_usergroups = map { $_ => 1 } @new_usergroups;
+delete $new_usergroups{ $_ } for qw(* user autoconfirmed);
+is_deeply [ sort keys %new_usergroups ], [ sort @groups ], q{Rights set to what we wanted}
+    or diag explain {
+        got => [ sort keys %new_usergroups ],
+        expected => [ sort @groups ],
+        error => $bot->{error}
+    };
+
+my @removed_usergroups = $bot->remove_usergroups('Perlwikibot testing', \@groups, $t);
+is_deeply \@removed_usergroups, \@groups, 'Removed what we asked for';
+
+my @added_usergroups = $bot->add_usergroups('Perlwikibot testing', \@groups, $t);
+is_deeply \@added_usergroups, \@groups, 'Added what we asked for';
+
+@removed_usergroups = $bot->remove_usergroups('Perlwikibot testing', \@groups, $t);
+is_deeply \@removed_usergroups, \@groups, 'Removed what we asked for';
