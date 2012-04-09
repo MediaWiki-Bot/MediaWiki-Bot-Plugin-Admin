@@ -1,6 +1,8 @@
 Changelog for {{$dist->name}}
 
 {{$NEXT}}
+
+3.004000  2012-04-09
     * Add support for changing usergroups
     * Use the provided unblock summary
 

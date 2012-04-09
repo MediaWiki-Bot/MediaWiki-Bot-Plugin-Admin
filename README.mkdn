@@ -4,7 +4,7 @@ MediaWiki::Bot::Plugin::Admin - A plugin to MediaWiki::Bot providing admin funct
 
 # VERSION
 
-version 3.005002
+version 5.004001
 
 # SYNOPSIS
 
